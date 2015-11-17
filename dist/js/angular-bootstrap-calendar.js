@@ -1,6 +1,6 @@
 /**
  * angular-bootstrap-calendar - A pure AngularJS bootstrap themed responsive calendar that can display events and has views for year, month, week and day
- * @version v0.15.5
+ * @version v0.17.0
  * @link https://github.com/mattlewis92/angular-bootstrap-calendar
  * @license MIT
  */
@@ -13,7 +13,7 @@
 		exports["angularBootstrapCalendarModuleName"] = factory(require("angular"), (function webpackLoadOptionalExternalModule() { try { return require("interact.js"); } catch(e) {} }()), require("moment"));
 	else
 		root["angularBootstrapCalendarModuleName"] = factory(root["angular"], root["interact"], root["moment"]);
-})(this, function(__WEBPACK_EXTERNAL_MODULE_13__, __WEBPACK_EXTERNAL_MODULE_37__, __WEBPACK_EXTERNAL_MODULE_39__) {
+})(this, function(__WEBPACK_EXTERNAL_MODULE_13__, __WEBPACK_EXTERNAL_MODULE_38__, __WEBPACK_EXTERNAL_MODULE_40__) {
 return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
@@ -107,7 +107,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	requireAll(__webpack_require__(14));
 	requireAll(__webpack_require__(28));
-	requireAll(__webpack_require__(32));
+	requireAll(__webpack_require__(33));
 
 
 /***/ },
@@ -248,6 +248,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	    $scope.$watchGroup([
 	      'vm.currentDay',
 	      'vm.view',
+	      'vm.cellIsOpen',
 	      function() {
 	        return moment.locale() + $locale.id; //Auto update the calendar when the locale changes
 	      }
@@ -274,7 +275,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        currentDay: '=',
 	        editEventHtml: '=',
 	        deleteEventHtml: '=',
-	        autoOpen: '=',
+	        cellIsOpen: '=',
 	        onEventClick: '&',
 	        onEventTimesChanged: '&',
 	        onEditEventClick: '&',
@@ -497,9 +498,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 
 	      //Auto open the calendar to the current day if set
-	      if (vm.autoOpen) {
+	      vm.openDayIndex = null;
+	      if (vm.cellIsOpen) {
 	        vm.view.forEach(function(day) {
-	          if (day.inMonth && moment(vm.currentDay).startOf('day').isSame(day.date) && !vm.openDayIndex) {
+	          if (day.inMonth && moment(vm.currentDay).startOf('day').isSame(day.date)) {
 	            vm.dayClicked(day, true);
 	          }
 	        });
@@ -523,9 +525,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var dayIndex = vm.view.indexOf(day);
 	      if (dayIndex === vm.openDayIndex) { //the day has been clicked and is already open
 	        vm.openDayIndex = null; //close the open day
+	        vm.cellIsOpen = false;
 	      } else {
 	        vm.openDayIndex = dayIndex;
 	        vm.openRowIndex = Math.floor(dayIndex / 7);
+	        vm.cellIsOpen = true;
 	      }
 
 	    };
@@ -576,7 +580,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        onEventTimesChanged: '=',
 	        editEventHtml: '=',
 	        deleteEventHtml: '=',
-	        autoOpen: '=',
+	        cellIsOpen: '=',
 	        onTimespanClick: '=',
 	        cellModifier: '=',
 	        cellTemplateUrl: '@',
@@ -668,16 +672,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	        vm.dayViewEnd,
 	        vm.dayViewSplit
 	      );
+
+	      vm.view = calendarHelper.getWeekView(vm.events, vm.currentDay, vm.showTimes);
 	      if (vm.showTimes) {
-	        vm.view = calendarHelper.getWeekViewWithTimes(
+	        vm.viewWithTimes = calendarHelper.getWeekViewWithTimes(
 	          vm.events,
 	          vm.currentDay,
 	          vm.dayViewStart,
 	          vm.dayViewEnd,
 	          vm.dayViewSplit
 	        );
-	      } else {
-	        vm.view = calendarHelper.getWeekView(vm.events, vm.currentDay);
 	      }
 	    });
 
@@ -724,6 +728,31 @@ return /******/ (function(modules) { // webpackBootstrap
 	      event.tempStartsAt = moment(event.startsAt).add(minutesDiff, 'minutes').toDate();
 	    };
 
+	    vm.eventResizeComplete = function(event, edge, minuteChunksMoved) {
+	      var minutesDiff = minuteChunksMoved * vm.dayViewSplit;
+	      var start = moment(event.startsAt);
+	      var end = moment(event.endsAt);
+	      if (edge === 'start') {
+	        start.add(minutesDiff, 'minutes');
+	      } else {
+	        end.add(minutesDiff, 'minutes');
+	      }
+	      delete event.tempStartsAt;
+
+	      vm.onEventTimesChanged({
+	        calendarEvent: event,
+	        calendarNewEventStart: start.toDate(),
+	        calendarNewEventEnd: end.toDate()
+	      });
+	    };
+
+	    vm.eventResized = function(event, edge, minuteChunksMoved) {
+	      var minutesDiff = minuteChunksMoved * vm.dayViewSplit;
+	      if (edge === 'start') {
+	        event.tempStartsAt = moment(event.startsAt).add(minutesDiff, 'minutes').toDate();
+	      }
+	    };
+
 	  }])
 	  .directive('mwlCalendarWeek', ["calendarUseTemplates", function(calendarUseTemplates) {
 
@@ -768,9 +797,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	      vm.view = calendarHelper.getYearView(vm.events, vm.currentDay, vm.cellModifier);
 
 	      //Auto open the calendar to the current day if set
-	      if (vm.autoOpen) {
+	      vm.openMonthIndex = null;
+	      if (vm.cellIsOpen) {
 	        vm.view.forEach(function(month) {
-	          if (moment(vm.currentDay).startOf('month').isSame(month.date) && !vm.openMonthIndex) {
+	          if (moment(vm.currentDay).startOf('month').isSame(month.date)) {
 	            vm.monthClicked(month, true);
 	          }
 	        });
@@ -794,9 +824,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	      var monthIndex = vm.view.indexOf(month);
 	      if (monthIndex === vm.openMonthIndex) { //the month has been clicked and is already open
 	        vm.openMonthIndex = null; //close the open month
+	        vm.cellIsOpen = false;
 	      } else {
 	        vm.openMonthIndex = monthIndex;
 	        vm.openRowIndex = Math.floor(monthIndex / 4);
+	        vm.cellIsOpen = true;
 	      }
 
 	    };
@@ -829,7 +861,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        onDeleteEventClick: '=',
 	        editEventHtml: '=',
 	        deleteEventHtml: '=',
-	        autoOpen: '=',
+	        cellIsOpen: '=',
 	        onTimespanClick: '=',
 	        cellModifier: '='
 	      },
@@ -866,7 +898,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	  }])
 	  .directive('mwlCollapseFallback', ["$injector", function($injector) {
 
-	    if ($injector.has('collapseDirective')) {
+	    if ($injector.has('uibCollapseDirective')) {
 	      return {};
 	    }
 
@@ -1289,7 +1321,8 @@ return /******/ (function(modules) { // webpackBootstrap
 	var map = {
 		"./calendarDate.js": 29,
 		"./calendarLimitTo.js": 30,
-		"./calendarTruncateEventTitle.js": 31
+		"./calendarTruncateEventTitle.js": 31,
+		"./calendarTrustAsHtml.js": 32
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -1417,12 +1450,31 @@ return /******/ (function(modules) { // webpackBootstrap
 /* 32 */
 /***/ function(module, exports, __webpack_require__) {
 
+	'use strict';
+
+	var angular = __webpack_require__(13);
+
+	angular
+	  .module('mwl.calendar')
+	  .filter('calendarTrustAsHtml', ["$sce", function($sce) {
+
+	    return function(text) {
+	      return $sce.trustAsHtml(text);
+	    };
+
+	  }]);
+
+
+/***/ },
+/* 33 */
+/***/ function(module, exports, __webpack_require__) {
+
 	var map = {
-		"./calendarConfig.js": 33,
-		"./calendarHelper.js": 34,
-		"./calendarTitle.js": 35,
-		"./interact.js": 36,
-		"./moment.js": 38
+		"./calendarConfig.js": 34,
+		"./calendarHelper.js": 35,
+		"./calendarTitle.js": 36,
+		"./interact.js": 37,
+		"./moment.js": 39
 	};
 	function webpackContext(req) {
 		return __webpack_require__(webpackContextResolve(req));
@@ -1435,11 +1487,11 @@ return /******/ (function(modules) { // webpackBootstrap
 	};
 	webpackContext.resolve = webpackContextResolve;
 	module.exports = webpackContext;
-	webpackContext.id = 32;
+	webpackContext.id = 33;
 
 
 /***/ },
-/* 33 */
+/* 34 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1494,7 +1546,8 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    var i18nStrings = {
 	      eventsLabel: 'Events',
-	      timeLabel: 'Time'
+	      timeLabel: 'Time',
+	      weekNumber: 'Week {week}'
 	    };
 
 	    var configProvider = this;
@@ -1555,7 +1608,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 34 */
+/* 35 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1721,7 +1774,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    }
 
-	    function getWeekView(events, currentDay) {
+	    function getWeekView(events, currentDay, filterOneDayEvents) {
 
 	      var startOfWeek = moment(currentDay).startOf('week');
 	      var endOfWeek = moment(currentDay).endOf('week');
@@ -1739,6 +1792,12 @@ return /******/ (function(modules) { // webpackBootstrap
 	          isWeekend: [0, 6].indexOf(dayCounter.day()) > -1
 	        });
 	        dayCounter.add(1, 'day');
+	      }
+
+	      if (filterOneDayEvents) {
+	        events = events.filter(function(event) {
+	          return !moment(event.startsAt).isSame(moment(event.endsAt), 'day');
+	        });
 	      }
 
 	      var eventsSorted = filterEventsInPeriod(events, startOfWeek, endOfWeek).map(function(event) {
@@ -1775,8 +1834,44 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	    }
 
-	    function getDayView(events, currentDay, dayViewStart, dayViewEnd, dayViewSplit) {
+	    function getCrossingsCount(event, dayEvents) {
+	      var eventStart = moment(event.startsAt);
+	      var eventEnd = moment(event.endsAt);
 
+	      return dayEvents.filter(function(ev) {
+
+	        return event.$id !== ev.$id &&
+	          (moment(ev.startsAt).isBetween(eventStart, eventEnd) ||
+	          moment(ev.startsAt).isSame(eventStart) ||
+	          moment(ev.endsAt).isBetween(eventStart, eventEnd) ||
+	          moment(ev.endsAt).isSame(eventEnd) ||
+	          moment(ev.startsAt).isBefore(eventStart) && moment(ev.endsAt).isAfter(eventEnd));
+	      }).length;
+	    }
+
+	    function eventsComparer(a, b) {
+	      var aStart = moment(a.startsAt);
+	      var bStart = moment(b.startsAt);
+
+	      if (aStart.isBefore(bStart)) {
+	        return -1;
+	      }
+
+	      if (aStart.isSame(bStart)) {
+	        var aEnd = moment(a.endsAt);
+	        var bEnd = moment(b.endsAt);
+
+	        if (aEnd.isSame(bEnd)) {
+	          return 0;
+	        } else if (aEnd.isAfter(bEnd)) {
+	          return -1;
+	        }
+	        return 1;
+	      }
+	    }
+
+	    function getDayView(events, currentDay, dayViewStart, dayViewEnd, dayViewSplit, isWeekViewWithTimes) {
+	      var baseBucketWidth = isWeekViewWithTimes ? 14.285714285714285 : 150;
 	      var dayStartHour = moment(dayViewStart || '00:00', 'HH:mm').hours();
 	      var dayEndHour = moment(dayViewEnd || '23:00', 'HH:mm').hours();
 	      var hourHeight = (60 / dayViewSplit) * 30;
@@ -1791,7 +1886,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        moment(currentDay).endOf('day').toDate()
 	      );
 
-	      return eventsInPeriod.map(function(event) {
+	      return eventsInPeriod.sort(eventsComparer).map(function(event) {
 	        if (moment(event.startsAt).isBefore(calendarStart)) {
 	          event.top = 0;
 	        } else {
@@ -1817,12 +1912,10 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 
 	        event.left = 0;
-
 	        return event;
 	      }).filter(function(event) {
 	        return event.height > 0;
 	      }).map(function(event) {
-
 	        var cannotFitInABucket = true;
 	        buckets.forEach(function(bucket, bucketIndex) {
 	          var canFitInThisBucket = true;
@@ -1836,36 +1929,47 @@ return /******/ (function(modules) { // webpackBootstrap
 
 	          if (canFitInThisBucket && cannotFitInABucket) {
 	            cannotFitInABucket = false;
-	            event.left = bucketIndex * 150;
+	            event.left = bucketIndex * baseBucketWidth;
+	            if (isWeekViewWithTimes) {
+	              event.bucketIndex = buckets.length;
+	            }
 	            buckets[bucketIndex].push(event);
 	          }
-
 	        });
 
 	        if (cannotFitInABucket) {
-	          event.left = buckets.length * 150;
+	          event.left = buckets.length * baseBucketWidth;
+	          if (isWeekViewWithTimes) {
+	            event.bucketIndex = buckets.length;
+	          }
 	          buckets.push([event]);
 	        }
-
 	        return event;
-
+	      }).map(function(event) {
+	        if (isWeekViewWithTimes) {
+	          event.width = getCrossingsCount(event, eventsInPeriod) > 0 ? baseBucketWidth / buckets.length : baseBucketWidth;
+	          event.left = event.bucketIndex * baseBucketWidth / (buckets.length);
+	          delete event.bucketIndex;
+	        }
+	        return event;
 	      });
-
 	    }
 
 	    function getWeekViewWithTimes(events, currentDay, dayViewStart, dayViewEnd, dayViewSplit) {
-	      var weekView = getWeekView(events, currentDay);
+	      var weekView = getWeekView(events, currentDay, false);
 	      var newEvents = [];
 	      weekView.days.forEach(function(day) {
 	        var dayEvents = weekView.events.filter(function(event) {
-	          return moment(event.startsAt).startOf('day').isSame(moment(day.date).startOf('day'));
+	          return moment(event.startsAt).isSame(moment(day.date), 'day') &&
+	            moment(event.endsAt).isSame(moment(day.date), 'day');
 	        });
 	        var newDayEvents = getDayView(
 	          dayEvents,
 	          day.date,
 	          dayViewStart,
 	          dayViewEnd,
-	          dayViewSplit
+	          dayViewSplit,
+	          true
 	        );
 	        newEvents = newEvents.concat(newDayEvents);
 	      });
@@ -1890,14 +1994,16 @@ return /******/ (function(modules) { // webpackBootstrap
 	      getDayViewHeight: getDayViewHeight,
 	      adjustEndDateFromStartDiff: adjustEndDateFromStartDiff,
 	      formatDate: formatDate,
-	      eventIsInPeriod: eventIsInPeriod //expose for testing only
+	      eventIsInPeriod: eventIsInPeriod, //expose for testing only
+	      getCrossingsCount: getCrossingsCount, //expose for testing only
+	      eventsComparer: eventsComparer //expose for testing only
 	    };
 
 	  }]);
 
 
 /***/ },
-/* 35 */
+/* 36 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1936,7 +2042,7 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 36 */
+/* 37 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -1944,7 +2050,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	var angular = __webpack_require__(13);
 	var interact;
 	try {
-	  interact = __webpack_require__(37);
+	  interact = __webpack_require__(38);
 	} catch (e) {
 	  /* istanbul ignore next */
 	  interact = null;
@@ -1956,20 +2062,20 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 37 */
+/* 38 */
 /***/ function(module, exports) {
 
-	if(typeof __WEBPACK_EXTERNAL_MODULE_37__ === 'undefined') {var e = new Error("Cannot find module \"undefined\""); e.code = 'MODULE_NOT_FOUND'; throw e;}
-	module.exports = __WEBPACK_EXTERNAL_MODULE_37__;
+	if(typeof __WEBPACK_EXTERNAL_MODULE_38__ === 'undefined') {var e = new Error("Cannot find module \"undefined\""); e.code = 'MODULE_NOT_FOUND'; throw e;}
+	module.exports = __WEBPACK_EXTERNAL_MODULE_38__;
 
 /***/ },
-/* 38 */
+/* 39 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
 	var angular = __webpack_require__(13);
-	var moment = __webpack_require__(39);
+	var moment = __webpack_require__(40);
 
 	angular
 	  .module('mwl.calendar')
@@ -1977,10 +2083,10 @@ return /******/ (function(modules) { // webpackBootstrap
 
 
 /***/ },
-/* 39 */
+/* 40 */
 /***/ function(module, exports) {
 
-	module.exports = __WEBPACK_EXTERNAL_MODULE_39__;
+	module.exports = __WEBPACK_EXTERNAL_MODULE_40__;
 
 /***/ }
 /******/ ])

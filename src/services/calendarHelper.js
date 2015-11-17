@@ -250,8 +250,7 @@ angular
 
         if(aEnd.isSame(bEnd)){
           return 0;
-        }
-        else if (aEnd.isAfter(bEnd)) {
+        } else if (aEnd.isAfter(bEnd)) {
           return -1;
         }
         return 1;

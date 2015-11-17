@@ -146,7 +146,7 @@ describe('calendarHelper', function() {
   });
 
   describe('getCrossingsCount', function(){
-    var dayEvents
+    var dayEvents;
 
     beforeEach(function(){
       dayEvents = [{
@@ -619,15 +619,15 @@ describe('calendarHelper', function() {
     beforeEach(function(){
       a = {
         startsAt: new Date('October 20, 2015 11:00:00'),
-        endsAt: new Date('October 20, 2015 13:00:00'),
+        endsAt: new Date('October 20, 2015 13:00:00')
       };
       b = {
         startsAt: new Date('October 20, 2015 11:00:00'),
-        endsAt: new Date('October 20, 2015 12:00:00'),
+        endsAt: new Date('October 20, 2015 12:00:00')
       };
       c = {
         startsAt: new Date('October 20, 2015 11:00:00'),
-        endsAt: new Date('October 20, 2015 13:00:00'),
+        endsAt: new Date('October 20, 2015 13:00:00')
       };
     });
 
