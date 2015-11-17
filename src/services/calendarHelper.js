@@ -248,7 +248,7 @@ angular
         var aEnd = moment(a.endsAt);
         var bEnd = moment(b.endsAt);
 
-        if(aEnd.isSame(bEnd)){
+        if (aEnd.isSame(bEnd)) {
           return 0;
         } else if (aEnd.isAfter(bEnd)) {
           return -1;

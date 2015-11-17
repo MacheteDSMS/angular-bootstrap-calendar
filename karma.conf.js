@@ -49,7 +49,7 @@ if (MIN) {
   });
 }
 
-var browsers = ['PhantomJS2'];
+var browsers = ['PhantomJS'];
 if (process.env.CI) { //phantomjs2 doesnt work on travis, but is way faster to run test locally
   browsers = ['PhantomJS'];
 }

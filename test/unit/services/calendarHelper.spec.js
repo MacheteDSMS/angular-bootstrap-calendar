@@ -145,10 +145,10 @@ describe('calendarHelper', function() {
 
   });
 
-  describe('getCrossingsCount', function(){
+  describe('getCrossingsCount', function() {
     var dayEvents;
 
-    beforeEach(function(){
+    beforeEach(function() {
       dayEvents = [{
         $id: 1,
         startsAt: new Date('November 11, 2015 02:00:00'),
@@ -613,17 +613,17 @@ describe('calendarHelper', function() {
     });
   });
 
-  describe('eventsComparer', function(){
+  describe('eventsComparer', function() {
     var a, b, c;
 
-    beforeEach(function(){
+    beforeEach(function() {
       a = {
-        startsAt: new Date('October 20, 2015 11:00:00'),
-        endsAt: new Date('October 20, 2015 13:00:00')
+        startsAt: new Date('November 15, 2015 08:00:00'),
+        endsAt: new Date('November 15, 2015 18:00:00')
       };
       b = {
-        startsAt: new Date('October 20, 2015 11:00:00'),
-        endsAt: new Date('October 20, 2015 12:00:00')
+        startsAt: new Date('November 15, 2015 10:00:00'),
+        endsAt: new Date('November 15, 2015 19:00:00')
       };
       c = {
         startsAt: new Date('October 20, 2015 11:00:00'),
@@ -631,15 +631,15 @@ describe('calendarHelper', function() {
       };
     });
 
-    it('eventA should be before eventB', function(){
+    it('eventA should be before eventB', function() {
       expect(calendarHelper.eventsComparer(a, b)).to.equal(-1);
     });
 
-    it('eventB should be after eventA', function(){
+    it('eventB should be after eventA', function() {
       expect(calendarHelper.eventsComparer(b, a)).to.equal(1);
     });
 
-    it('eventA should be equal eventC', function(){
+    it('eventA should be equal eventC', function() {
       expect(calendarHelper.eventsComparer(a, c)).to.equal(0);
     });
   });
