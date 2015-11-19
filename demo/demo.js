@@ -2,6 +2,9 @@
 
 angular
   .module('demo', ['mwl.calendar', 'ui.bootstrap', 'ngTouch', 'ngAnimate'])
+  .config(function(calendarConfigProvider){
+    calendarConfigProvider.showTimesOnWeekView(true);
+  })
   .controller('MainCtrl', function ($uibModal, moment) {
 
     var vm = this;
@@ -29,6 +32,22 @@ angular
         type: 'important',
         startsAt: moment().startOf('day').add(7, 'hours').toDate(),
         endsAt: moment().startOf('day').add(19, 'hours').toDate(),
+        recursOn: 'year',
+        draggable: true,
+        resizable: true
+      }, {
+        title: 'This is a really long event title that occurs on every year',
+        type: 'important',
+        startsAt: moment().startOf('week').add(8, 'hours').toDate(),
+        endsAt: moment().startOf('week').add(10, 'hours').toDate(),
+        recursOn: 'year',
+        draggable: true,
+        resizable: true
+      }, {
+        title: 'This is a really long event title that occurs on every year',
+        type: 'important',
+        startsAt: moment().startOf('week').add(8, 'hours').toDate(),
+        endsAt: moment().startOf('week').add(12, 'hours').toDate(),
         recursOn: 'year',
         draggable: true,
         resizable: true
