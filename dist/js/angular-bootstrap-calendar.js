@@ -498,8 +498,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	      }
 
 	      //Auto open the calendar to the current day if set
-	      vm.openDayIndex = null;
-	      if (vm.cellIsOpen) {
+	      if (vm.cellIsOpen && !vm.openRowIndex && !vm.openDayIndex) {
 	        vm.view.forEach(function(day) {
 	          if (day.inMonth && moment(vm.currentDay).startOf('day').isSame(day.date)) {
 	            vm.dayClicked(day, true);
