@@ -1868,6 +1868,7 @@ return /******/ (function(modules) { // webpackBootstrap
 	        }
 	        return 1;
 	      }
+	      return 1;
 	    }
 
 	    function getDayView(events, currentDay, dayViewStart, dayViewEnd, dayViewSplit, isWeekViewWithTimes) {
