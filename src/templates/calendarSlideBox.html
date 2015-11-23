@@ -4,10 +4,9 @@
 
       <li
         ng-repeat="event in vm.events | orderBy:'startsAt' track by event.$id"
-        ng-class="event.cssClass"
         mwl-draggable="event.draggable === true"
         drop-data="{event: event}">
-        <span class="pull-left event" ng-class="'event-' + event.type"></span>
+        <span class="pull-left event" ng-class="[event.cssClass, 'event-' + event.type]"></span>
         &nbsp;
         <a
           href="javascript:;"
