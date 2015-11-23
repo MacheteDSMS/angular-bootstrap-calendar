@@ -626,8 +626,8 @@ describe('calendarHelper', function() {
         endsAt: new Date('November 15, 2015 19:00:00')
       };
       c = {
-        startsAt: new Date('October 20, 2015 11:00:00'),
-        endsAt: new Date('October 20, 2015 13:00:00')
+        startsAt: new Date('November 15, 2015 08:00:00'),
+        endsAt: new Date('November 15, 2015 18:00:00')
       };
     });
 
