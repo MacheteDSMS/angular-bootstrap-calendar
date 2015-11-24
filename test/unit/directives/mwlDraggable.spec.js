@@ -21,7 +21,8 @@ describe('mwlDraggable directive', function() {
       'on-drag-end="onDragEnd(x, y)" ' +
       'on-drag="onDrag(x, y)" ' +
       'drop-data="dropData"' +
-      '></div>';
+      '></div>',
+    $timeout;
 
   function prepareScope(vm) {
     //These variables MUST be set as a minimum for the calendar to work
@@ -40,10 +41,11 @@ describe('mwlDraggable directive', function() {
     $provide.constant('interact', interact);
   }));
 
-  beforeEach(angular.mock.inject(function(_$compile_, _$rootScope_, _$window_) {
+  beforeEach(angular.mock.inject(function(_$compile_, _$rootScope_, _$window_, _$timeout_) {
     $window = _$window_;
     $compile = _$compile_;
     $rootScope = _$rootScope_;
+    $timeout = _$timeout_;
     scope = $rootScope.$new();
     prepareScope(scope);
 
@@ -104,6 +106,13 @@ describe('mwlDraggable directive', function() {
     draggableOptions.onstart(event);
     draggableOptions.onmove(event);
     draggableOptions.onend(event);
+
+    // flush timeout(s) for all code under test.
+    $timeout.flush();
+
+    // this will throw an exception if there are any pending timeouts.
+    $timeout.verifyNoPendingTasks();
+
     expect(angular.element(event.target).hasClass('dragging-active')).to.be.false;
     expect(angular.element(event.target).css('pointerEvents')).to.equal('auto');
     expect(angular.element(event.target).css('transform')).to.equal('');

@@ -18,7 +18,8 @@ describe('mwlresizable directive', function() {
       'on-resize-start="onResizeStart()" ' +
       'on-resize-end="onResizeEnd(x, y)" ' +
       'on-resize="onResize(x, y)" ' +
-      '></div>';
+      '></div>',
+    $timeout;
 
   function prepareScope(vm) {
     //These variables MUST be set as a minimum for the calendar to work
@@ -37,9 +38,10 @@ describe('mwlresizable directive', function() {
     $provide.constant('interact', interact);
   }));
 
-  beforeEach(angular.mock.inject(function(_$compile_, _$rootScope_) {
+  beforeEach(angular.mock.inject(function(_$compile_, _$rootScope_, _$timeout_) {
     $compile = _$compile_;
     $rootScope = _$rootScope_;
+    $timeout = _$timeout_;
     scope = $rootScope.$new();
     prepareScope(scope);
 
@@ -119,6 +121,13 @@ describe('mwlresizable directive', function() {
     resizableOptions.onstart(event);
     resizableOptions.onmove(event);
     resizableOptions.onend(event);
+
+    // flush timeout(s) for all code under test.
+    $timeout.flush();
+
+    // this will throw an exception if there are any pending timeouts.
+    $timeout.verifyNoPendingTasks();
+
     expect(scope.onResizeEnd).to.have.been.calledWith(0, 4);
     expect(angular.element(event.target).css('transform')).to.eql('');
     expect(angular.element(event.target).css('width')).to.eql('30px');
